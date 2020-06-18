@@ -1,0 +1,161 @@
+﻿@page "/education"
+@using System.Net.Http
+@using BlazorApp1.ViewModels
+@inject HttpClient Http
+
+<h3>Education</h3>
+
+<BlazorApp1.Components.ModalComponent @ref="Modal"></BlazorApp1.Components.ModalComponent>
+
+
+
+
+<EditForm Model="@educationData" OnValidSubmit="AddNewEducation">
+    <DataAnnotationsValidator />
+    <ValidationSummary style="@displaySummary" />
+    <div class="row">
+        <div class="row col-sm-12 form-group">
+            <label class="col-sm-2">Description</label>
+            <div class="col-sm-10">
+                <input class="form-control" type="text" @bind="educationData.Description" name="Description" />
+            </div>
+        </div>
+        <div class="row col-sm-12 form-group">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-10">
+                <div class="text-left mb-3">
+                    <input type="submit" name="SaveData" value="Save" class="btn btn-primary" />
+                </div>
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+<div class="text-right mb-3">
+    <button class="btn btn-primary btn-lg pull-right" @onclick="() => Modal.Open()">Add new Education</button>
+</div>
+
+@if (isLoading)
+{ 
+    <div class="center-page-custom ">
+        <div class="lds-ripple"><div></div><div></div></div>
+    </div>
+}
+
+@if (message != null)
+{
+    <div class=@((message.IsSuccessStatusCode) ? "alert alert-success" : "alert alert-danger") role="alert">
+        @errorMessage
+    </div>
+}
+
+@if (educationItems == null)
+{
+<div class="center-page-custom ">
+    <div class="lds-ripple"><div></div><div></div></div>
+</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr class="d-flex">
+                    <th scope="col" class="col-1">ID</th>
+                    <th scope="col"class="col-10">Description</th>
+                    <th scope="col" class="col-1">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ed in educationItems)
+                {
+                    <tr class="d-flex">
+                        <td scope="row" class="col-1">@ed.Id</td>
+                        <td scope="row" class="col-10">@ed.Description</td>
+                        <td scope="row" class="col-1">
+                            <div class="text-right mb-3">                                
+                                <input type="submit" name="Delete" value="Delete" @onclick="@(() => RemoveEducation(ed.Id))" class="btn btn-primary" />
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+
+
+@code {
+
+    private BlazorApp1.Components.ModalComponent Modal { get; set; }
+
+    private string errorMessage;
+    private Educations[] educationItems;
+    HttpResponseMessage message;
+
+    private bool isLoading = false;
+    private string displaySummary = "display:block";
+
+
+    private Educations educationData = new Educations();
+
+
+    protected override async Task OnInitializedAsync() =>
+        educationItems = await Http.GetFromJsonAsync<Educations[]>("/api/Education");
+
+    private async Task ReloadData()
+    {
+        isLoading = true;
+        StateHasChanged();
+
+
+        educationItems = await Http.GetFromJsonAsync<Educations[]>("/api/Education");
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task AddNewEducation()
+    {
+        displaySummary = "display:none";
+        isLoading = true;
+        StateHasChanged();
+        message = await Http.PostAsJsonAsync("api/Education", educationData);
+
+        if (message.IsSuccessStatusCode)
+        {
+            educationData.Description = string.Empty;
+            errorMessage = "Data saved successfully";
+            await ReloadData();
+        }
+        else
+        {
+            errorMessage = "Data saving failed";
+        }
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task RemoveEducation(decimal id)
+    {
+        isLoading = true;
+        StateHasChanged();
+        message = await Http.DeleteAsync("api/Education/"+id);
+
+        if (message.IsSuccessStatusCode)
+        {
+            errorMessage = "Data removed successfully";
+            await ReloadData();
+        }
+        else
+        {
+            errorMessage = "Data removing failed";
+        }
+        isLoading = false;
+        StateHasChanged();
+    }
+
+
+
+}

@@ -2,6 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <Version>1.0.1</Version>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <Authors>Smilu Varghese</Authors>
+    <Product>Training appliction</Product>
+    <Copyright>Free to use</Copyright>
   </PropertyGroup>
 
   <ItemGroup>

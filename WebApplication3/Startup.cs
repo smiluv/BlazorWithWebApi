@@ -1,18 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using System.Reflection;
-using System.IO;
+using System;
 
 namespace WebApplication3
 {
@@ -68,9 +60,20 @@ namespace WebApplication3
                 app.UseDeveloperExceptionPage();
             }
 
+            //Adding swagger for web api to work
             app.UseSwagger();
-            app.UseSwaggerUI(c => {
+            app.UseSwaggerUI(c =>
+            {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Test API for Learning V1");
+            });
+
+
+            //Adding this for working between apps. Should be customized for security when in production
+            app.UseCors(builder=> {
+                builder.WithOrigins("https://localhost:44391/");
+                builder.AllowAnyOrigin();
+                builder.AllowAnyHeader();
+                builder.AllowAnyMethod();
             });
 
             app.UseHttpsRedirection();
@@ -83,8 +86,6 @@ namespace WebApplication3
             {
                 endpoints.MapControllers();
             });
-
-            
         }
     }
 }
