@@ -7,12 +7,12 @@ namespace WebApplication3.Models
     {
         public Education()
         {
-            UserDetails = new HashSet<UserDetails>();
+            //UserDetails = new HashSet<UserDetails>();
         }
 
-        public long Id { get; set; }
+        public decimal Id { get; set; }
         public string Description { get; set; }
 
-        public virtual ICollection<UserDetails> UserDetails { get; set; }
+        //public virtual ICollection<UserDetails> UserDetails { get; set; }
     }
 }

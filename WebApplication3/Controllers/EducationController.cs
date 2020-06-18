@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebApplication3.Models;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -16,16 +17,21 @@ namespace WebApplication3.Controllers
         TrainingContext myContext = new TrainingContext();
         // GET: api/<EducationController>
         [HttpGet]
-        public IEnumerable<Education> Get()
+        public async Task<ActionResult<IEnumerable<Education>>> GetAllEducations()
         {
-            return myContext.Education.ToList();
+            return await myContext.Education.ToListAsync();
         }
 
         // GET api/<EducationController>/5
         [HttpGet("{id}")]
-        public Education Get(int id)
+        public async Task<ActionResult<Education>> GetEducation(decimal id)
         {
-            var myRecord = myContext.Education.Where(e => e.Id == id).FirstOrDefault();
+            var myRecord = await myContext.Education.FindAsync(id);
+            if (myRecord == null)
+            {
+                return NotFound();
+            }
+
             return myRecord;
         }
 
