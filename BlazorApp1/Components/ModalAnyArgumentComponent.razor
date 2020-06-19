@@ -1,6 +1,4 @@
-﻿@page "/modal"
-<!-- Modal -->
-<div class="modal @ModalClass" tabindex="-1" role="dialog" style="display:@ModalDisplay">
+﻿<div class="modal @ModalClass" tabindex="-1" role="dialog" style="display:@ModalDisplay">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -13,7 +11,7 @@
                 <p>@ChildContent</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" @onclick="@(async (args) => await OnClickCallback.InvokeAsync(args))">Continue</button>
+                <button type="button" class="btn btn-primary" @onclick="@OnClickCallback">Continue</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" @onclick="() => Close()">Close</button>
             </div>
         </div>
@@ -26,7 +24,6 @@
 }
 
 @code {
-
     public Guid Guid = Guid.NewGuid();
     public string ModalDisplay = "none;";
     public string ModalClass = "";
@@ -39,8 +36,8 @@
     public RenderFragment ChildContent { get; set; }
 
     [Parameter]
-    public EventCallback<MouseEventArgs> OnClickCallback { get; set; }
-    
+    public EventCallback OnClickCallback { get; set; }
+
 
     public void Open()
     {
@@ -57,5 +54,4 @@
         ShowBackdrop = false;
         StateHasChanged();
     }
-
 }

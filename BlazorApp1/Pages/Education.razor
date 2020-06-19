@@ -2,15 +2,20 @@
 @using System.Net.Http
 @using BlazorApp1.ViewModels
 @inject HttpClient Http
+@implements IDisposable
 
 <h3>Education</h3>
 
-<BlazorApp1.Components.ModalComponent @ref="Modal"></BlazorApp1.Components.ModalComponent>
+<BlazorApp1.Components.ModalComponent @ref="Modal" Title="Warning" OnClickCallback="@AddNewEducation">
+    <p>Do you wish to continue?</p>
+</BlazorApp1.Components.ModalComponent>
+
+<BlazorApp1.Components.ModalAnyArgumentComponent @ref="Modal2" Title="Warning" OnClickCallback="@(() => RemoveEducation(deletionRecordID))">
+    <p>Do you wish to detete the record?</p>
+</BlazorApp1.Components.ModalAnyArgumentComponent>
 
 
-
-
-<EditForm Model="@educationData" OnValidSubmit="AddNewEducation">
+<EditForm EditContext="@editContext" OnValidSubmit="() => Modal.Open()">
     <DataAnnotationsValidator />
     <ValidationSummary style="@displaySummary" />
     <div class="row">
@@ -24,7 +29,7 @@
             <div class="col-sm-2"></div>
             <div class="col-sm-10">
                 <div class="text-left mb-3">
-                    <input type="submit" name="SaveData" value="Save" class="btn btn-primary" />
+                    <button type="submit" id="SaveData" class="btn btn-primary">Save</button>
                 </div>
             </div>
         </div>
@@ -32,11 +37,11 @@
 </EditForm>
 
 <div class="text-right mb-3">
-    <button class="btn btn-primary btn-lg pull-right" @onclick="() => Modal.Open()">Add new Education</button>
+    <button class="btn btn-primary btn-lg pull-right" @onclick="() => Modal2.Open()">Add new Education</button>
 </div>
 
 @if (isLoading)
-{ 
+{
     <div class="center-page-custom ">
         <div class="lds-ripple"><div></div><div></div></div>
     </div>
@@ -51,9 +56,9 @@
 
 @if (educationItems == null)
 {
-<div class="center-page-custom ">
-    <div class="lds-ripple"><div></div><div></div></div>
-</div>
+    <div class="center-page-custom ">
+        <div class="lds-ripple"><div></div><div></div></div>
+    </div>
 }
 else
 {
@@ -62,7 +67,7 @@ else
             <thead>
                 <tr class="d-flex">
                     <th scope="col" class="col-1">ID</th>
-                    <th scope="col"class="col-10">Description</th>
+                    <th scope="col" class="col-10">Description</th>
                     <th scope="col" class="col-1">Action</th>
                 </tr>
             </thead>
@@ -73,8 +78,8 @@ else
                         <td scope="row" class="col-1">@ed.Id</td>
                         <td scope="row" class="col-10">@ed.Description</td>
                         <td scope="row" class="col-1">
-                            <div class="text-right mb-3">                                
-                                <input type="submit" name="Delete" value="Delete" @onclick="@(() => RemoveEducation(ed.Id))" class="btn btn-primary" />
+                            <div class="text-right mb-3">
+                                <input type="submit" name="Delete" value="Delete" @onclick="(() => DeleteRecord(ed.Id))" class="btn btn-primary" />
                             </div>
                         </td>
                     </tr>
@@ -87,8 +92,11 @@ else
 
 
 @code {
+    //((e) => RemoveEducation(e, ed.Id)
 
     private BlazorApp1.Components.ModalComponent Modal { get; set; }
+    private BlazorApp1.Components.ModalAnyArgumentComponent Modal2 { get; set; }
+    private decimal deletionRecordID;
 
     private string errorMessage;
     private Educations[] educationItems;
@@ -96,19 +104,50 @@ else
 
     private bool isLoading = false;
     private string displaySummary = "display:block";
+    private string eventName = "AddNewEducation";
 
 
     private Educations educationData = new Educations();
+
+    #region FormValidations
+
+    private bool formInvalid = true;    //disabled of button is not working properly 
+    private EditContext editContext;
+
+
+
+    protected override void OnInitialized()
+    {
+        this.editContext = new EditContext(educationData);
+        this.editContext.OnFieldChanged += HandleFieldChanged;
+    }
+
+    private void HandleFieldChanged(object sender, FieldChangedEventArgs e)
+    {
+        formInvalid = !editContext.Validate();
+        this.StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        editContext.OnFieldChanged -= HandleFieldChanged;
+    }
+
+    #endregion
 
 
     protected override async Task OnInitializedAsync() =>
         educationItems = await Http.GetFromJsonAsync<Educations[]>("/api/Education");
 
+    //protected override async Task OnInitializedAsync()
+    //{
+    //    educationItems = await Http.GetFromJsonAsync<Educations[]>("/api/Education");
+    //}
+
     private async Task ReloadData()
     {
         isLoading = true;
         StateHasChanged();
-
 
         educationItems = await Http.GetFromJsonAsync<Educations[]>("/api/Education");
 
@@ -116,7 +155,8 @@ else
         StateHasChanged();
     }
 
-    private async Task AddNewEducation()
+
+    private async Task AddNewEducation(MouseEventArgs e)
     {
         displaySummary = "display:none";
         isLoading = true;
@@ -133,15 +173,28 @@ else
         {
             errorMessage = "Data saving failed";
         }
+
+        Modal.Close();
         isLoading = false;
         StateHasChanged();
+
+    }
+
+
+    //Make one method fir CRUD opertions which will handle all events based on some input into the method.
+    //Then we can reuse the OnClickCallback of the modal popup to manage everything.
+    private void DeleteRecord(decimal id)
+    {
+        deletionRecordID = id;
+        Modal2.Open();
     }
 
     private async Task RemoveEducation(decimal id)
     {
+        Modal2.Close();
         isLoading = true;
         StateHasChanged();
-        message = await Http.DeleteAsync("api/Education/"+id);
+        message = await Http.DeleteAsync("api/Education/" + id);
 
         if (message.IsSuccessStatusCode)
         {
@@ -155,7 +208,4 @@ else
         isLoading = false;
         StateHasChanged();
     }
-
-
-
 }

@@ -18,6 +18,9 @@ This application is only created for learning purposes. There will be mistakes h
 * Added education view
 * Add and delete function added
 
+### V2.0.1.0
+* Added a modal popup for confirmation
+
 ## WebApplication3
 ### V1.0.1.0
 * Updated the EducationController to have PUT, POST and DELETE methods. 

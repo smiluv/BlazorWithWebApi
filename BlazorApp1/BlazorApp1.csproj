@@ -1,13 +1,15 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <RazorLangVersion>3.0</RazorLangVersion>
-    <Version>2.0.0</Version>
+    <Version>2.0.1</Version>
     <Authors>Smilu</Authors>
     <Product>Blazor training</Product>
     <Description>Training app. This is only for learning purpose</Description>
     <Copyright>Free</Copyright>
+    <AssemblyVersion>2.0.1.0</AssemblyVersion>
+    <FileVersion>2.0.1.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
